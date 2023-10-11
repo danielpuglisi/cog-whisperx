@@ -23,7 +23,7 @@ class Predictor(BasePredictor):
         self,
         audio: Path = Input(description="Audio file"),
         batch_size: int = Input(description="Parallelization of input audio transcription", default=32),
-        hugging_face_token=Input(description="Parallelization of input audio transcription", default=None),
+        hugging_face_token: str = Input(description="Parallelization of input audio transcription", default=None),
         debug: bool = Input(description="Print out memory usage information.", default=False)
     ) -> str:
         """Run a single prediction on the model"""
