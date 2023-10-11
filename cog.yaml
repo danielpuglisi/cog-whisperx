@@ -21,6 +21,8 @@ build:
   run: 
     - "pip install ipython"
 
+image: 'r8.im/mymeetai/whisperx-speakers'
+
 predict: 'predict.py:Predictor'
 
 
