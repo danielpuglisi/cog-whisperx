@@ -24,7 +24,7 @@ class Predictor(BasePredictor):
     def predict(
         self,
         audio: Path = Input(description="Audio file", default="https://pyannote-speaker-diarization.s3.eu-west-2.amazonaws.com/lex-levin-4min.mp3"),
-        batch_size: int = Input(description="Parallelization of input audio transcription", default=32),
+        batch_size: int = Input(description="Parallelization of input audio transcription", default=16),
         hugging_face_token: str = Input(description="Your Hugging Face access token. If empty skip diarization.", default=None),
         debug: bool = Input(description="Print out memory usage information.", default=False)
     ) -> str:
