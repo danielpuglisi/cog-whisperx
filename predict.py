@@ -21,9 +21,9 @@ class Predictor(BasePredictor):
 
     def predict(
         self,
-        audio: Path = Input(description="Audio file"),
+        audio: Path = Input(description="Audio file", default="https://pyannote-speaker-diarization.s3.eu-west-2.amazonaws.com/lex-levin-4min.mp3"),
         batch_size: int = Input(description="Parallelization of input audio transcription", default=32),
-        hugging_face_token: str = Input(description="Parallelization of input audio transcription", default=None),
+        hugging_face_token: str = Input(description="Your Hugging Face access token. If empty skip diarization.", default=None),
         debug: bool = Input(description="Print out memory usage information.", default=False)
     ) -> str:
         """Run a single prediction on the model"""
@@ -37,9 +37,10 @@ class Predictor(BasePredictor):
             result = whisperx.align(result['segments'], model_a, metadata, audio, self.device, return_char_alignments=False)
 
             # 3. Assign speaker labels
-            diarize_model = whisperx.DiarizationPipeline(model_name='pyannote/speaker-diarization@2.1', use_auth_token=hugging_face_token, device=self.device)
-            diarize_segments = diarize_model(audio)
-            result = whisperx.assign_word_speakers(diarize_segments, result)
+            if hugging_face_token:
+                diarize_model = whisperx.DiarizationPipeline(use_auth_token=hugging_face_token, device=self.device)
+                diarize_segments = diarize_model(audio)
+                result = whisperx.assign_word_speakers(diarize_segments, result)
 
             if debug:
                 print(
