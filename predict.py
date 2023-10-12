@@ -18,7 +18,6 @@ class Predictor(BasePredictor):
         self.device = "cuda"
         self.model = whisperx.load_model(
             "large-v2", self.device, compute_type=compute_type)
-        self.allign_model_en, self.metadata_en = whisperx.load_align_model(language_code='en', device=self.device)
         self.allign_model_ru, self.metadata_ru = whisperx.load_align_model(language_code='ru', device=self.device)
 
     def predict(
@@ -36,12 +35,10 @@ class Predictor(BasePredictor):
 
             # 2. Align whisper output
             lang = result["language"]
-            if lang == 'en':
-                result = whisperx.align(result['segments'], self.allign_model_en, self.metadata_en, audio, self.device, return_char_alignments=False)
-            elif lang == 'ru':
+            if lang == 'ru':
                 result = whisperx.align(result['segments'], self.allign_model_ru, self.metadata_ru, audio, self.device, return_char_alignments=False)
             else:
-                model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=self.device)
+                model_a, metadata = whisperx.load_align_model(language_code=lang, device=self.device)
                 result = whisperx.align(result['segments'], model_a, metadata, audio, self.device, return_char_alignments=False)
 
             # 3. Assign speaker labels
