@@ -20,12 +20,7 @@ build:
 
   run: 
     - "pip install ipython"
-    - "pip install pyannote.audio==3.0.1"
-    - "pip uninstall -y onnxruntime"
-    - "pip install --force-reinstall onnxruntime-gpu"
 
 image: 'r8.im/mymeetai/whisperx-speakers'
 
 predict: 'predict.py:Predictor'
-
-
