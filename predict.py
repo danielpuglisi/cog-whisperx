@@ -9,7 +9,7 @@ os.environ['HF_HOME'] = '/src/hf_models'
 os.environ['TORCH_HOME'] = '/src/torch_models'
 
 
-compute_type = "float16"
+compute_type = "float32"
 
 
 class Predictor(BasePredictor):
@@ -26,7 +26,7 @@ class Predictor(BasePredictor):
         audio: Path = Input(description="Audio file", default="https://pyannote-speaker-diarization.s3.eu-west-2.amazonaws.com/lex-levin-4min.mp3"),
         batch_size: int = Input(description="Parallelization of input audio transcription", default=16),
         hugging_face_token: str = Input(description="Your Hugging Face access token. If empty skip diarization.", default=None),
-        debug: bool = Input(description="Print out memory usage information.", default=False)
+        debug: bool = Input(description="Print out memory usage information.", default=True)
     ) -> str:
         """Run a single prediction on the model"""
         with torch.inference_mode():
@@ -46,7 +46,7 @@ class Predictor(BasePredictor):
 
             # 3. Assign speaker labels
             if hugging_face_token:
-                diarize_model = whisperx.DiarizationPipeline(model_name='pyannote/speaker-diarization@2.1', use_auth_token=hugging_face_token, device=self.device)
+                diarize_model = whisperx.DiarizationPipeline(use_auth_token=hugging_face_token, device=self.device)
                 diarize_segments = diarize_model(audio)
                 result = whisperx.assign_word_speakers(diarize_segments, result)
 
