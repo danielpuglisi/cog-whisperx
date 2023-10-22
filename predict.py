@@ -46,7 +46,7 @@ class Predictor(BasePredictor):
 
             # 3. Assign speaker labels
             if hugging_face_token:
-                diarize_model = whisperx.DiarizationPipeline(model_name='pyannote/speaker-diarization@2.1', use_auth_token=hugging_face_token, device=self.device)
+                diarize_model = whisperx.DiarizationPipeline(use_auth_token=hugging_face_token, device=self.device)
                 diarize_segments = diarize_model(audio)
                 result = whisperx.assign_word_speakers(diarize_segments, result)
 
