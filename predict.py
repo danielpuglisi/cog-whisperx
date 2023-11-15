@@ -31,25 +31,30 @@ class Predictor(BasePredictor):
     ) -> str:
         """Run a single prediction on the model"""
         with torch.inference_mode():
-            # 1. Transcribe with original whisper (batched)
-            audio = whisperx.load_audio(str(audio))
-            result = self.model.transcribe(audio, batch_size=batch_size, language=language)
+            try:
+                # 1. Transcribe with original whisper (batched)
+                audio = whisperx.load_audio(str(audio))
+                result = self.model.transcribe(audio, batch_size=batch_size, language=language)
 
-            # 2. Align whisper output
-            lang = result["language"]
-            if lang == 'en':
-                result = whisperx.align(result['segments'], self.allign_model_en, self.metadata_en, audio, self.device, return_char_alignments=False)
-            elif lang == 'ru':
-                result = whisperx.align(result['segments'], self.allign_model_ru, self.metadata_ru, audio, self.device, return_char_alignments=False)
-            else:
-                model_a, metadata = whisperx.load_align_model(language_code=lang, device=self.device)
-                result = whisperx.align(result['segments'], model_a, metadata, audio, self.device, return_char_alignments=False)
+                # 2. Align whisper output
+                lang = result["language"]
+                if lang == 'en':
+                    result = whisperx.align(result['segments'], self.allign_model_en, self.metadata_en, audio, self.device, return_char_alignments=False)
+                elif lang == 'ru':
+                    result = whisperx.align(result['segments'], self.allign_model_ru, self.metadata_ru, audio, self.device, return_char_alignments=False)
+                else:
+                    if lang == 'nn':
+                        pass
+                    model_a, metadata = whisperx.load_align_model(language_code=lang, device=self.device)
+                    result = whisperx.align(result['segments'], model_a, metadata, audio, self.device, return_char_alignments=False)
 
-            # 3. Assign speaker labels
-            if hugging_face_token:
-                diarize_model = whisperx.DiarizationPipeline(use_auth_token=hugging_face_token, device=self.device)
-                diarize_segments = diarize_model(audio)
-                result = whisperx.assign_word_speakers(diarize_segments, result)
+                # 3. Assign speaker labels
+                if hugging_face_token:
+                    diarize_model = whisperx.DiarizationPipeline(use_auth_token=hugging_face_token, device=self.device)
+                    diarize_segments = diarize_model(audio)
+                    result = whisperx.assign_word_speakers(diarize_segments, result)
+            except Exception as e:
+                return json.dumps(f"Error occurred {e}")
 
             if debug:
                 print(
