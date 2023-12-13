@@ -43,8 +43,11 @@ class Predictor(BasePredictor):
                 elif lang == 'ru':
                     result = whisperx.align(result['segments'], self.allign_model_ru, self.metadata_ru, audio, self.device, return_char_alignments=False)
                 elif lang != 'nn':
-                    model_a, metadata = whisperx.load_align_model(language_code=lang, device=self.device)
-                    result = whisperx.align(result['segments'], model_a, metadata, audio, self.device, return_char_alignments=False)
+                    try:
+                        model_a, metadata = whisperx.load_align_model(language_code=lang, device=self.device)
+                        result = whisperx.align(result['segments'], model_a, metadata, audio, self.device, return_char_alignments=False)
+                    except Exception as e:
+                        print(e)
 
                 # 3. Assign speaker labels
                 if hugging_face_token:
