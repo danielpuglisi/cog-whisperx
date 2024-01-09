@@ -8,18 +8,14 @@ import os
 os.environ['HF_HOME'] = '/src/hf_models'
 os.environ['TORCH_HOME'] = '/src/torch_models'
 
-
 compute_type = "float16"
-
 
 class Predictor(BasePredictor):
     def setup(self):
         """Load the model into memory to make running multiple predictions efficient"""
         self.device = "cuda"
-        self.model = whisperx.load_model(
-            "large-v3", self.device, compute_type=compute_type)
-        self.allign_model_en, self.metadata_en = whisperx.load_align_model(language_code='en', device=self.device)
-        self.allign_model_ru, self.metadata_ru = whisperx.load_align_model(language_code='ru', device=self.device)
+        self.model = whisperx.load_model("large-v3", self.device, compute_type=compute_type)
+        self.align_model_en, self.metadata_en = whisperx.load_align_model(language_code='en', device=self.device)
 
     def predict(
         self,
@@ -27,6 +23,7 @@ class Predictor(BasePredictor):
         batch_size: int = Input(description="Parallelization of input audio transcription", default=16),
         hugging_face_token: str = Input(description="Your Hugging Face access token. If empty skip diarization.", default=None),
         language: str = Input(description="Spoken language. If empty auto detect.", default=None),
+
         debug: bool = Input(description="Print out memory usage information.", default=True)
     ) -> str:
         """Run a single prediction on the model"""
@@ -39,10 +36,11 @@ class Predictor(BasePredictor):
                 # 2. Align whisper output
                 lang = result["language"]
                 if lang == 'en':
-                    result = whisperx.align(result['segments'], self.allign_model_en, self.metadata_en, audio, self.device, return_char_alignments=False)
-                elif lang == 'ru':
-                    result = whisperx.align(result['segments'], self.allign_model_ru, self.metadata_ru, audio, self.device, return_char_alignments=False)
-                elif lang != 'nn':
+                    result = whisperx.align(result['segments'], self.align_model_en, self.metadata_en, audio, self.device, return_char_alignments=False)
+                # elif lang == 'ru':
+                #     result = whisperx.align(result['segments'], self.align_model_ru, self.metadata_ru, audio, self.device, return_char_alignments=False)
+                # elif lang != 'nn':
+                else:
                     try:
                         model_a, metadata = whisperx.load_align_model(language_code=lang, device=self.device)
                         result = whisperx.align(result['segments'], model_a, metadata, audio, self.device, return_char_alignments=False)
@@ -60,4 +58,5 @@ class Predictor(BasePredictor):
             if debug:
                 print(
                     f"max gpu memory allocated over runtime: {torch.cuda.max_memory_reserved() / (1024 ** 3):.2f} GB")
-        return json.dumps([result['segments'], lang])
+        # return json.dumps([result['segments'], lang])
+        return json.dumps(result)
