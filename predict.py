@@ -59,4 +59,8 @@ class Predictor(BasePredictor):
                 print(
                     f"max gpu memory allocated over runtime: {torch.cuda.max_memory_reserved() / (1024 ** 3):.2f} GB")
         # return json.dumps([result['segments'], lang])
-        return json.dumps(result)
+        output = {
+            "word_segments": result['word_segments'],
+            "language": lang
+        }
+        return json.dumps(output)
